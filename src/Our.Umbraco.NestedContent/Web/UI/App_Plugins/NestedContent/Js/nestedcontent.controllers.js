@@ -345,7 +345,7 @@ angular.module("umbraco").controller("Our.Umbraco.NestedContent.Controllers.Nest
                 if ($scope.singleMode || ($scope.nodes.length == 1 && $scope.maxItems == 1)) {
                     $scope.currentNode = $scope.nodes[0];
                 }
-
+                updateRelationsAsync();
                 inited = true;
             }
         }
@@ -406,7 +406,36 @@ angular.module("umbraco").controller("Our.Umbraco.NestedContent.Controllers.Nest
                     newValues.push(newValue);
                 }
                 $scope.model.value = newValues;
+                updateRelationsAsync();
             }
+        }
+        
+        var relationsCached = {};
+        async function updateRelationsAsync() {
+            for (var i = 0; i < $scope.nodes.length; i++) {
+                var node = $scope.nodes[i];
+                var existingValue = $scope.model.value[i];
+                for (var t = 0; t < node.tabs.length; t++) {
+                    var tab = node.tabs[t];
+                    for (var p = 0; p < tab.properties.length; p++) {
+                        var prop = tab.properties[p];
+                        if (typeof prop.value !== "function") {                            
+                            if (prop.view === "contentpicker" && prop.value) {
+                                if (relationsCached.hasOwnProperty(prop.value)) {
+                                    existingValue[prop.propertyAlias + "_Name"] = relationsCached[prop.value];
+                                }
+                                else {
+                                    await contentResource.getById(prop.value)
+                                        .then(function (data) {
+                                            existingValue[prop.propertyAlias + "_Name"] = data.name;
+                                            relationsCached[prop.value] = data.name;
+                                        });
+                                }
+                            }
+                        }
+                    }
+                }
+            }            
         }
 
         $scope.$watch("currentNode", function (newVal) {
