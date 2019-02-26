@@ -280,7 +280,7 @@ angular.module("umbraco").controller("Our.Umbraco.NestedContent.Controllers.Nest
         $scope.scaffolds = [];
         _.each($scope.model.config.contentTypes, function (contentType) {
             contentResource.getScaffold(-20, contentType.ncAlias).then(function (scaffold) {
-                // remove all tabs except the specified tab
+                // remove all tabs except the specified tab 
                 var tab = _.find(scaffold.tabs, function (tab) {
                     return tab.id != 0 && (tab.alias.toLowerCase() == contentType.ncTabAlias.toLowerCase() || contentType.ncTabAlias == "");
                 });
